@@ -1,0 +1,26 @@
+# Unity-generated artifacts (not part of the package)
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+
+# Meta files for folders that only exist when a Unity project has consumed the package
+# (Unity generates these itself)
+Documentation~.meta
+Samples~.meta
+
+# OS + editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vs/
+.vscode/
+.idea/
+
+# Package outputs
+*.tgz

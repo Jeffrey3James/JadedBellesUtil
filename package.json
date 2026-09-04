@@ -1,0 +1,25 @@
+{
+  "name": "com.jadedbelles.util",
+  "version": "0.1.0",
+  "displayName": "JadedBelles Util",
+  "description": "Reusable Unity utilities for JadedBelles games. Currently ships a generic 2D grid system; more modules will land here as they get extracted from Xandria Gem Jam and other JadedBelles titles.",
+  "unity": "2022.3",
+  "author": {
+    "name": "Jeffrey James III",
+    "url": "https://github.com/Jeffrey3James"
+  },
+  "keywords": [
+    "grid",
+    "utility",
+    "match3",
+    "jadedbelles"
+  ],
+  "license": "UNLICENSED",
+  "samples": [
+    {
+      "displayName": "Grid System Basics",
+      "description": "A minimal example that creates a GridSystem2D, sets values, and prints them.",
+      "path": "Samples~/GridSystemBasics"
+    }
+  ]
+}
