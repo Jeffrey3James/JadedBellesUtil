@@ -2,6 +2,21 @@
 
 All notable changes to `com.jadedbelles.util` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-09-04
+
+### Added
+- `JadedBelles.Util.EditorTools` gains three editor tools consolidated from the loose `Editor/` folders scattered across the JadedBelles portfolio (extracted from `SyntyGameJam/Assets/_Scripts/Editor/`; Match3's `Assets/Editor/AttPostProcess.cs` is an empty stub and was skipped):
+  - `PrefabPlacerWindow` — editor window that scatters copies of a prefab across a rectangular area around an origin transform, then captures the placements into a `PrefabLayoutData` asset. Opens from `Tools > JadedBelles > Prefab Placer`.
+  - `PrefabLayoutData` + `PlacedPrefabData` — ScriptableObject asset that stores captured placements (prefab, position, rotation) so a layout can be reloaded later. `[CreateAssetMenu]` path: `JadedBelles/Prefab Layout Data`.
+  - `SceneSwitcherToolbar` + `SceneSwitcherOverlay` — Scene View overlay hosting a dropdown that lists every scene enabled in Build Settings and switches to the picked one. Prompts to save unsaved changes before switching. Enable from the Scene View's Overlays menu as `Scene Switcher`.
+- All new files land in the existing `Editor/` folder alongside `EditorUtils.cs` and are picked up automatically by the existing `JadedBelles.Util.Editor` asmdef (Editor-only include platforms). No new assembly, no new asmdef, no runtime code touched.
+
+### Changed
+- Source ↔ package divergence: two intentional generalizations vs. the SyntyGameJam originals.
+  - `PrefabPlacerWindow.placedPrefabTag` is now a serialized inspector field (defaults to `"PlacedPrefab"`) instead of a hardcoded string, so games that already use a different tag don't have to define a duplicate.
+  - Menu paths regrouped under `Tools/JadedBelles/...` and toolbar id renamed from `"Scene Tools/Scene Switcher"` to `"JadedBelles/Scene Switcher"` so every package tool shows up in one place.
+- All four extracted files gained a `JadedBelles.Util.EditorTools` namespace (upstream copies were in the global namespace).
+
 ## [0.6.0] - 2026-09-04
 
 ### Added

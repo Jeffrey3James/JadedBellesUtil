@@ -433,6 +433,9 @@ Small collection of `GUIStyle` and label helpers for custom inspectors, editor w
 - `EditorUtils.CreateLabelAndConfigure(label, guiStyle, color)` — render a `GUILayout.Label` using a temporary clone of the style with its text color overridden.
 - `EditorUtils.CenteredStyle(fontSize)` — bold, center-aligned `GUIStyle` at the requested font size on top of `EditorStyles.boldLabel`.
 - `EditorUtils.AddSpaceToGUI(int)` — `GUILayout.Space` wrapper that reads more clearly inside long custom-editor layouts.
+- `PrefabPlacerWindow` — editor window (open from `Tools > JadedBelles > Prefab Placer`) that scatters copies of a prefab across a rectangular area around an origin transform, then captures placements into a `PrefabLayoutData` asset. Placed-prefab tag is a serialized inspector field (defaults to `"PlacedPrefab"`).
+- `PrefabLayoutData` — ScriptableObject asset storing captured placements. Create via `Assets > Create > JadedBelles > Prefab Layout Data`.
+- `SceneSwitcherOverlay` + `SceneSwitcherToolbar` — Scene View overlay hosting a dropdown that lists every scene enabled in Build Settings and switches to the picked one. Enable from the Scene View's Overlays menu as `Scene Switcher`; prompts to save before switching.
 
 Minimal example:
 
