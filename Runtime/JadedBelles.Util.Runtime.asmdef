@@ -2,7 +2,8 @@
     "name": "JadedBelles.Util.Runtime",
     "rootNamespace": "JadedBelles.Util",
     "references": [
-        "Unity.TextMeshPro"
+        "Unity.TextMeshPro",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

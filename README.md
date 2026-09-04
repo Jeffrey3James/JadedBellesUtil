@@ -6,6 +6,7 @@ Reusable Unity utilities extracted from Xandria Gem Jam and other JadedBelles ti
 
 - Unity 2022.3 or newer
 - TextMeshPro (built-in on modern Unity)
+- Unity Input System (`com.unity.inputsystem`) — required by the `Input` module. Add it via `Window → Package Manager → Unity Registry → Input System` if your project doesn't already have it.
 
 ## Install
 
@@ -55,6 +56,75 @@ grid.OnValueChangeEvent += (x, y, cell) => Debug.Log($"Set ({x},{y})");
 ```
 
 Or install the `Grid System Basics` sample via Package Manager for a runnable version.
+
+### `JadedBelles.Util.Events`
+
+ScriptableObject-based event channels extracted from Match3. Decouples producers from consumers by routing signals through an asset — great for cross-scene / cross-system communication without wiring `[SerializeField]` references everywhere.
+
+- `EventChannel<T>` — abstract generic channel. Subclass with `[CreateAssetMenu]` in your game project to expose it in Unity's asset menu.
+- `EventChannel` — no-payload variant for signal-only events (uses the internal `Empty` sentinel).
+- `EventListener<T>` / `EventListener` — MonoBehaviour listeners that bind to a channel asset and forward raised values to an inspector-configured `UnityEvent<T>`.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Events;
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "Events/ScoreChangedEventChannel")]
+public class ScoreChangedEventChannel : EventChannel<int> { }
+
+public class ScoreProducer : MonoBehaviour
+{
+    [SerializeField] private ScoreChangedEventChannel scoreChanged;
+    public void Award(int amount) => scoreChanged.Invoke(amount);
+}
+```
+
+### `JadedBelles.Util.StateMachine`
+
+A lightweight, transition-based finite state machine. No Unity dependency in the core, so states are trivially unit-testable; drop the `StateMachineComponent` MonoBehaviour on a GameObject to drive it from Unity's Update loop.
+
+- `IState` — `OnEnter / Update / FixedUpdate / OnExit` contract.
+- `StateMachine` — plain-C# machine with `SetState`, `AddTransition(from, to, condition)`, `AddAnyTransition(to, condition)`, `Tick`, `FixedTick`, and an `OnStateChanged` event.
+- `StateMachineComponent` — abstract MonoBehaviour wrapper that owns a `StateMachine` and forwards Update / FixedUpdate.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.StateMachine;
+using UnityEngine;
+
+public class EnemyBrain : StateMachineComponent
+{
+    private void Start()
+    {
+        var idle = new IdleState();
+        var chase = new ChaseState(this);
+
+        Machine.AddTransition(idle, chase, () => PlayerInSight());
+        Machine.AddTransition(chase, idle, () => !PlayerInSight());
+
+        Machine.SetState(idle);
+    }
+
+    private bool PlayerInSight() => /* ... */ false;
+}
+```
+
+### `JadedBelles.Util.Input`
+
+ScriptableObject-based input abstraction. Gameplay code holds an `InputReader` reference and subscribes to strongly typed events; the concrete subclass is the only piece that touches Unity's `InputSystem`, so rebinds and platform tweaks stay contained.
+
+- `InputReader` — abstract SO base with `Enable() / Disable()` virtuals and `MoveEvent`, `PrimaryPressed`, `PrimaryReleased`, `PointerPositionChanged` events. Subclasses call the protected `Raise*` helpers.
+
+Usage:
+
+1. In your game project, generate a `PlayerInputActions` C# class from an Input Actions asset (`.inputactions` → *Generate C# Class*).
+2. Create a `[CreateAssetMenu]` subclass of `InputReader` that implements the generated `IPlayerActions` interface and calls `RaiseMove / RaisePrimaryPressed / …` from each callback.
+3. Create the SO asset in your project and inject it into consuming MonoBehaviours via `[SerializeField]`.
+
+See the doc comment on `InputReader` for a full subclass example.
 
 ## Roadmap
 
