@@ -2,6 +2,31 @@
 
 All notable changes to `com.jadedbelles.util` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-09-04
+
+### Added
+- `JadedBelles.Util.Services` module (extracted from the canonical `StroTheGoatUtils.UnityServicesInitializer` block and the inline `NetworkBootstrap.InitializeServicesAsync` reinvention in `mobile-arena-fighter`):
+  - `UnityServicesInitializer` — static helper wrapping `UnityServices.InitializeAsync()` plus the standard "sign in anonymously if not already signed in" fallback. Exposes `InitializeAndSignInAsync()` (Task) and `InitializeAndSignIn()` (coroutine-friendly `IEnumerator` wrapper), plus `IsInitialized` and `IsSignedIn` status flags. Idempotent: no-ops once initialization has succeeded and the player is still signed in. Exceptions are caught and logged via `Debug.LogError`, matching the pre-extraction behavior of the four sibling repos this was consolidated from.
+  - Guarded by new `JADEDBELLES_UGS_CORE` and `JADEDBELLES_UGS_AUTH` version-defines in the Runtime asmdef, tied to `com.unity.services.core` (>= 1.0.0) and `com.unity.services.authentication` (>= 2.0.0). Projects without those UGS packages installed still compile against the util package — the type simply isn't visible.
+- `JadedBelles.Util.EditorTools` module (extracted from the four-copy `StroTheGoatUtils.EditorUtils` block; only the Match3 copy had the `#if UNITY_EDITOR` guard):
+  - `EditorUtils.CreateLabelAndConfigure(label, guiStyle, color)`, `EditorUtils.CenteredStyle(fontSize)`, `EditorUtils.AddSpaceToGUI(int)` — small `GUIStyle` and label helpers for custom inspectors, editor windows, and scene overlays.
+  - Ships in a brand-new `JadedBelles.Util.Editor` assembly (`Editor/JadedBelles.Util.Editor.asmdef`, `"includePlatforms": ["Editor"]`, references `JadedBelles.Util.Runtime`) so every `.cs` under `Editor/` is Editor-only automatically. This makes the missing-`#if`-in-canonical/Synty bug unrepresentable going forward — the assembly itself is stripped from non-editor targets, so `UnityEditor` types can never leak into player builds.
+- `JadedBelles.Util.UITK` module (extracted from the two-of-four-copies `StroTheGoatUtils.VisualElementsExtensions` block; Match3 and Anni-Gem omit it):
+  - `VisualElementsExtensions.CreateChild(...)`, `CreateChild<T>(...)`, `AddTo<T>(...)`, `AddClass<T>(...)`, `WithManipulators<T>(...)` — fluent extension helpers on `UnityEngine.UIElements.VisualElement` for UI Toolkit.
+  - Guarded by a new `JADEDBELLES_UITK` version-define in the Runtime asmdef, tied to `com.unity.modules.uielements` (>= 1.0.0). UI Elements is a built-in Unity module that is auto-referenced on modern Unity, so the guard is belt-and-braces — present so the file compiles away cleanly on exotic project configurations that strip built-in modules.
+  - Renamed the `IManipulator` parameter of `WithManipulators<T>` from `maniuplator` (typo in every upstream copy) to `manipulator`. Positional parameter, no caller-visible API change.
+
+### Changed
+- Runtime asmdef (`Runtime/JadedBelles.Util.Runtime.asmdef`) gains three `versionDefines` entries (`JADEDBELLES_UGS_CORE`, `JADEDBELLES_UGS_AUTH`, `JADEDBELLES_UITK`) and adds `Unity.Services.Core` + `Unity.Services.Authentication` to `references`. Every field the version-defines govern is guarded at the file level, so consumers without those UGS packages installed still get a clean compile against the rest of the package.
+
+### Known follow-up work
+- **`NetworkBootstrap` (in `mobile-arena-fighter`) adoption of `UnityServicesInitializer` — deferred.** The extracted helper is API-shape-compatible (both use `UnityServices.InitializeAsync()` + `AuthenticationService.SignInAnonymouslyAsync()`, both track an "initialized" flag), but `NetworkBootstrap.InitializeServicesAsync` currently emits three intermediate `Status("...")` callbacks (`"Initialising Unity Services..."`, `"Signing in anonymously..."`, `"Ready."`) between the two awaited calls, and the extracted helper doesn't expose a per-step status hook. Adopting the helper as-is would collapse those three callbacks into one, which is a behavioural change on the consumer's public event stream (`OnStatusChanged`). The clean fix belongs in the consumer repo (either drop the intermediate messages or wrap the helper with a small caller-side prelude/coda). Not a package concern. Do not commit to `mobile-arena-fighter` from this wave.
+- **Second-consumer confirmation for `UnityServicesInitializer.InitializeAndSignIn()` coroutine wrapper.** The Task API is a direct verbatim lift; the `IEnumerator` overload is a small ergonomic addition on top so that coroutine-only consumers don't need their own `AwaitTask` shim. No sibling repo uses this yet — flag if the ergonomics need adjustment once a first coroutine caller lands.
+
+### Notes
+- No existing 0.1.x / 0.2.x / 0.3.x / 0.4.x public API was modified. All new modules land as additive namespaces (`JadedBelles.Util.Services`, `JadedBelles.Util.UITK`, `JadedBelles.Util.EditorTools`) in either the Runtime assembly or the new Editor assembly.
+- The new Editor assembly (`JadedBelles.Util.Editor`) references the Runtime assembly, so Editor tools can freely call any runtime util. Runtime code does not (and cannot) reference the Editor assembly.
+
 ## [0.4.0] - 2026-09-04
 
 ### Added

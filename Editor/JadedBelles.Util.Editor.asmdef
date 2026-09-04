@@ -1,0 +1,18 @@
+{
+    "name": "JadedBelles.Util.Editor",
+    "rootNamespace": "JadedBelles.Util.EditorTools",
+    "references": [
+        "JadedBelles.Util.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

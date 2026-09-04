@@ -375,16 +375,90 @@ public class AudioBinder : MonoBehaviour
 }
 ```
 
+### `JadedBelles.Util.Services`
+
+One-shot helper for Unity Gaming Services (UGS): calls `UnityServices.InitializeAsync()` and, if the player isn't already signed in, `AuthenticationService.Instance.SignInAnonymouslyAsync()`. Every JadedBelles title that talks to UGS (Leaderboards, Cloud Save, Relay, Authentication) runs the same fifteen-line try/await/log block; this module consolidates it.
+
+- `UnityServicesInitializer.InitializeAndSignInAsync()` — `Task`-returning entry point. Idempotent: no-ops once `IsInitialized` is true and the player is still signed in.
+- `UnityServicesInitializer.InitializeAndSignIn()` — coroutine-friendly wrapper you can `yield return` from any `MonoBehaviour`.
+- `UnityServicesInitializer.IsInitialized` / `IsSignedIn` — status flags for gating downstream UGS calls.
+
+**Requires `com.unity.services.core` (>= 1.0.0) and `com.unity.services.authentication` (>= 2.0.0).** The file is guarded by the `JADEDBELLES_UGS_CORE` and `JADEDBELLES_UGS_AUTH` version-defines declared in the Runtime asmdef, so it compiles away cleanly on projects that don't have those UGS packages installed — no compile error, the type just isn't visible.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Services;
+using UnityEngine;
+
+public class Bootstrap : MonoBehaviour
+{
+    private async void Start()
+    {
+        await UnityServicesInitializer.InitializeAndSignInAsync();
+        if (UnityServicesInitializer.IsInitialized)
+            Debug.Log("UGS ready — safe to call Leaderboards / CloudSave / Relay.");
+    }
+}
+```
+
+### `JadedBelles.Util.UITK`
+
+Fluent extension helpers on `VisualElement` for UI Toolkit (UITK). Lifted verbatim from the canonical `StroTheGoatUtils.cs` so every UITK-using JadedBelles project can share one authoritative implementation instead of a copy-paste-then-drift lineage.
+
+- `VisualElementsExtensions.CreateChild(...)` — create a plain `VisualElement` child with USS classes and return it for chaining.
+- `VisualElementsExtensions.CreateChild<T>(...)` — typed variant that returns the concrete element type.
+- `VisualElementsExtensions.AddTo<T>(...)` — attach the caller to a parent and return the caller.
+- `VisualElementsExtensions.AddClass<T>(...)` — add every non-null / non-empty USS class in a `params` list.
+- `VisualElementsExtensions.WithManipulators<T>(...)` — attach an `IManipulator` and return the element.
+
+**Requires `com.unity.modules.uielements` (>= 1.0.0).** The UI Elements module is a built-in Unity module that is auto-referenced on modern Unity, so in practice you have this already; the `JADEDBELLES_UITK` version-define is belt-and-braces so the file compiles away cleanly on exotic project configurations that strip built-in modules.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.UITK;
+using UnityEngine.UIElements;
+
+var root = new VisualElement();
+var row = root.CreateChild("row", "header");
+var label = row.CreateChild<Label>("row__label");
+label.text = "Score";
+```
+
+### `JadedBelles.Util.EditorTools` (Editor-only)
+
+Small collection of `GUIStyle` and label helpers for custom inspectors, editor windows, and scene overlays. Ships in a separate `JadedBelles.Util.Editor` assembly whose asmdef declares `"includePlatforms": ["Editor"]`, so **every `.cs` file under `Editor/` is Editor-only automatically** — no `#if UNITY_EDITOR` guards needed. Consumers get the module for free once they reference the package; player builds never see it.
+
+- `EditorUtils.CreateLabelAndConfigure(label, guiStyle, color)` — render a `GUILayout.Label` using a temporary clone of the style with its text color overridden.
+- `EditorUtils.CenteredStyle(fontSize)` — bold, center-aligned `GUIStyle` at the requested font size on top of `EditorStyles.boldLabel`.
+- `EditorUtils.AddSpaceToGUI(int)` — `GUILayout.Space` wrapper that reads more clearly inside long custom-editor layouts.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.EditorTools;
+using UnityEditor;
+using UnityEngine;
+
+public sealed class ExampleWindow : EditorWindow
+{
+    private void OnGUI()
+    {
+        EditorUtils.CreateLabelAndConfigure("Status", EditorUtils.CenteredStyle(14), Color.green);
+        EditorUtils.AddSpaceToGUI(12);
+    }
+}
+```
+
 ## Roadmap
 
 Slated for extraction from the Match3 codebase as they mature and prove reusable:
 
 - `HUDCounter` — animated numeric counter UI component
 - `CloudSaveManager` glue — thin wrapper around JadedBelles API save endpoints
-- `UnityServicesInitializer` — one-shot UGS init + anonymous sign-in (guarded by an asmdef version define)
-- `EditorUtils` — GUIStyle / label helpers, in a separate `JadedBellesUtil.Editor` asmdef
-- `VisualElementsExtensions` — UI Toolkit fluent helpers, UITK-guarded
 - Grid-neighborhood offsets (`NeighborOffsets`, `ForEachNeighborInBounds`) — after Match3's PowerUp code stabilizes
+- `NetworkBootstrap` adoption of `UnityServicesInitializer` inside `mobile-arena-fighter` — deferred; NetworkBootstrap currently emits three intermediate `Status(...)` callbacks around the init/sign-in dance that the extracted helper collapses to a single call. Adoption is a small refactor in the consumer, not a package change.
 
 ## Contributing
 

@@ -3,7 +3,9 @@
     "rootNamespace": "JadedBelles.Util",
     "references": [
         "Unity.TextMeshPro",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.Services.Core",
+        "Unity.Services.Authentication"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -12,6 +14,22 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.services.core",
+            "expression": "1.0.0",
+            "define": "JADEDBELLES_UGS_CORE"
+        },
+        {
+            "name": "com.unity.services.authentication",
+            "expression": "2.0.0",
+            "define": "JADEDBELLES_UGS_AUTH"
+        },
+        {
+            "name": "com.unity.modules.uielements",
+            "expression": "1.0.0",
+            "define": "JADEDBELLES_UITK"
+        }
+    ],
     "noEngineReferences": false
 }
