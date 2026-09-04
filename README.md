@@ -114,9 +114,10 @@ public class EnemyBrain : StateMachineComponent
 
 ### `JadedBelles.Util.Input`
 
-ScriptableObject-based input abstraction. Gameplay code holds an `InputReader` reference and subscribes to strongly typed events; the concrete subclass is the only piece that touches Unity's `InputSystem`, so rebinds and platform tweaks stay contained.
+ScriptableObject-based input abstraction and mobile input widgets. Gameplay code holds an `InputReader` reference and subscribes to strongly typed events; the concrete subclass is the only piece that touches Unity's `InputSystem`, so rebinds and platform tweaks stay contained.
 
 - `InputReader` — abstract SO base with `Enable() / Disable()` virtuals and `MoveEvent`, `PrimaryPressed`, `PrimaryReleased`, `PointerPositionChanged` events. Subclasses call the protected `Raise*` helpers.
+- `MobileJoystick` — on-screen virtual joystick MonoBehaviour. Attach to a Canvas element with a background `RectTransform` and a knob `RectTransform`; exposes `Value` as `Vector2` in `[-1, 1]`. Implements `IPointerDownHandler / IDragHandler / IPointerUpHandler`, so the scene needs an `EventSystem` and a `GraphicRaycaster` on the parent canvas.
 
 Usage:
 
@@ -285,13 +286,104 @@ public class LoadingController : MonoBehaviour
 }
 ```
 
+### `JadedBelles.Util.Auth`
+
+Session-persistence helper for the JadedBelles JWT API. Wraps `PlayerPrefs` with Base64 obfuscation and a per-title key prefix so multiple JadedBelles games installed on the same device do not clobber each other's session.
+
+- `TokenStore` — instance-based store with `SaveTokens`, `GetAccessToken`, `GetRefreshToken`, `Clear`, `HasSession`, plus the resolved `AccessTokenKey` / `RefreshTokenKey` for diagnostics. The default `KeyPrefix` is `"jadedbelles."`. Pass a title-unique prefix to isolate per-game sessions, or pass an empty string to preserve the legacy pre-v0.4.0 key names (`jb_access_token` / `jb_refresh_token`) during migration.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Auth;
+
+var tokens = new TokenStore("match3.");
+tokens.SaveTokens(accessJwt, refreshJwt);
+if (tokens.HasSession())
+    Debug.Log($"Logged in — access key = {tokens.AccessTokenKey}");
+```
+
+### `JadedBelles.Util.Pooling`
+
+Hand-rolled generic component pool for hot-loop allocations (projectiles, hit VFX, collectable pickups, one-shot audio sources). Intentionally distinct from Unity's built-in `UnityEngine.Pool.ObjectPool<T>`: this variant is constrained to `Component`, calls `SetActive` on the owning `GameObject` around `Get` / `Release`, and no-ops on double-release.
+
+- `ObjectPool<T> where T : Component` — `Get()`, `Release(item)`, `AvailableCount`. Constructor takes a `Func<T>` factory closure (typically wrapping `Object.Instantiate(prefab, parent)`).
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Pooling;
+using UnityEngine;
+
+public class ProjectileSpawner : MonoBehaviour
+{
+    [SerializeField] private Projectile prefab;
+    private ObjectPool<Projectile> _pool;
+
+    private void Awake() => _pool = new ObjectPool<Projectile>(() => Instantiate(prefab, transform));
+
+    public Projectile Fire() => _pool.Get();
+    public void Recycle(Projectile p) => _pool.Release(p);
+}
+```
+
+### `JadedBelles.Util.Color`
+
+Canonical JadedBelles brand color palette, extracted from the `ColorChanger` helper that had been copy-pasted verbatim across four repos.
+
+- `Palette` — the canonical static color set: `Grey`, `Green`, `Blue`, `Gold`, `Purple`, `Red`. Use these for status messages, UI accents, and anywhere brand colors need to stay in sync across titles.
+- `ColorChanger` — legacy alias whose fields forward to `Palette`. Preserved so existing call sites like `LoginMessage.color = ColorChanger.Green;` migrate with a namespace change only.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Color;
+using TMPro;
+using UnityEngine;
+
+public class ToastMessage : MonoBehaviour
+{
+    [SerializeField] private TMP_Text label;
+
+    public void ShowSuccess(string msg) { label.text = msg; label.color = Palette.Green; }
+    public void ShowError(string msg)   { label.text = msg; label.color = Palette.Red; }
+}
+```
+
+### `JadedBelles.Util.UnityExtensions`
+
+Idiomatic Unity extension methods that every project rewrites eventually. Bundled together so a single `using` unlocks both.
+
+- `GameObjectExtensions.GetOrAdd<T>(this GameObject)` — returns the existing `T` component if attached, otherwise adds and returns a fresh one.
+- `GameObjectExtensions.OrNull<T>(this T)` — bypasses Unity's fake-null so `??` and `?.` behave correctly on destroyed `UnityEngine.Object` references.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.UnityExtensions;
+using UnityEngine;
+
+public class AudioBinder : MonoBehaviour
+{
+    private AudioSource _source;
+
+    private void Awake()
+    {
+        _source = gameObject.GetOrAdd<AudioSource>();
+        var maybe = someOtherReference.OrNull() ?? _source; // real null-coalesce, no fake-null trap
+    }
+}
+```
+
 ## Roadmap
 
 Slated for extraction from the Match3 codebase as they mature and prove reusable:
 
 - `HUDCounter` — animated numeric counter UI component
 - `CloudSaveManager` glue — thin wrapper around JadedBelles API save endpoints
-- Object pooling helpers
+- `UnityServicesInitializer` — one-shot UGS init + anonymous sign-in (guarded by an asmdef version define)
+- `EditorUtils` — GUIStyle / label helpers, in a separate `JadedBellesUtil.Editor` asmdef
+- `VisualElementsExtensions` — UI Toolkit fluent helpers, UITK-guarded
 - Grid-neighborhood offsets (`NeighborOffsets`, `ForEachNeighborInBounds`) — after Match3's PowerUp code stabilizes
 
 ## Contributing
