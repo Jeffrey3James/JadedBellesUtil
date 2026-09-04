@@ -2,6 +2,30 @@
 
 All notable changes to `com.jadedbelles.util` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-09-04
+
+### Added
+- `JadedBelles.Util.RoomTemplates` — template-driven, collider-aware room layout randomizer. Author a room type ("Bedroom", "Kitchen", "Boss Arena") as a set of zones with candidate prefabs, then randomize infinite variations while `Physics.OverlapBox` prevents pieces from clipping into each other.
+  - `RoomTemplate` — ScriptableObject asset (`Assets > Create > JadedBelles > Room Template`) holding a `templateName` plus a list of `RoomSlot` entries.
+  - `RoomSlot` — one entry per template slot: `slotName`, `Bounds localZone` (in room-origin local space), weighted `candidatePrefabs`, `Vector2Int countRange`, `SlotRotationMode` (None / RandomYaw / RandomYaw90 / RandomAll), `maxPlacementAttempts`, and `overlapPadding` for tight-vs-loose packing.
+  - `SlotPrefabCandidate` — prefab + weight pair; higher weight = picked more often.
+  - `SlotZoneAuthoring` (Runtime MonoBehaviour, `[RequireComponent(BoxCollider)]`) — the author-time helper. Drop it on a child of your room origin, set the slot name + candidates, size the BoxCollider to define the zone. Draws a colored gizmo box in the Scene View so you see zones while placing them.
+  - `RoomRandomizer` (static service, runtime-safe) — `Randomize(RoomRandomizerOptions)` fills a template into the scene. Uses `Physics.OverlapBox` against a configurable `LayerMask`, retries per-piece up to `maxPlacementAttempts`, reports success/failure via `onPlaced` / `onPlacementFailed` callbacks, supports optional deterministic seed. Bounds are computed from the prefab's colliders (falling back to renderers) so decor prefabs without physics still get spaced out sanely.
+- `RoomRandomizerWindow` editor tool (`Tools > JadedBelles > Room Randomizer`):
+  - Fill a `RoomTemplate` into the scene with one click; hooks into Undo so a mis-randomize is one Ctrl+Z away.
+  - `Clear Container` button to wipe a spawn parent's children.
+  - `Snapshot Into Existing Template` — walks every `SlotZoneAuthoring` under the origin, converts each zone into origin-local `Bounds` (sampling all 8 corners of the local BoxCollider and rebuilding the AABB in origin space so arbitrary parent rotation still works), and writes them into the template asset.
+  - `Create New Template From Origin…` — same, but pops a save dialog for a fresh asset.
+  - Optional fixed seed for reproducible layouts.
+
+### Why
+- Extends v0.7.0's `PrefabPlacerWindow` (which scatters ONE prefab across a rectangle) with a real layout system: multi-slot, multi-prefab, weighted, collider-checked. The two tools cover different needs — PrefabPlacer for "scatter 50 rocks across this area", RoomTemplate for "build a plausible bedroom".
+
+### Notes
+- Runtime API is a single static class + a MonoBehaviour authoring helper + two data types — no scene singleton, no manager, no execution-order dependency. Consumers can call `RoomRandomizer.Randomize` from gameplay code (procgen dungeons, roguelike levels) exactly as the editor window does.
+- 3D-only in this cut. A `Physics2D.OverlapBox` variant is a future addition once a 2D consumer asks for it.
+- No changes to any existing 0.1.x–0.7.x public API.
+
 ## [0.7.0] - 2026-09-04
 
 ### Added

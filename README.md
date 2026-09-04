@@ -500,6 +500,69 @@ public sealed class Boot : MonoBehaviour
 // Set returnSceneName in the inspector to whatever scene the Save button should load.
 ```
 
+### `JadedBelles.Util.RoomTemplates`
+
+Template-driven room layout randomizer with collider-aware overlap prevention. Author a room type ("Bedroom", "Kitchen", "Boss Arena") as a set of zones — boxes in the scene, each labelled with a slot name and a list of candidate prefabs — then randomize infinite variations. `Physics.OverlapBox` on each prefab's collider bounds keeps pieces from clipping into each other.
+
+- `RoomTemplate` — ScriptableObject asset holding a list of `RoomSlot` entries.
+- `RoomSlot` — zone (Bounds), candidate prefabs with weights, count range, rotation mode (`None` / `RandomYaw` / `RandomYaw90` / `RandomAll`), max placement attempts, overlap padding.
+- `SlotZoneAuthoring` — MonoBehaviour with a BoxCollider that lets you author zones visually in a scene. Draws a gizmo box for each zone.
+- `RoomRandomizer.Randomize(options)` — static service that fills a template. Runtime-safe; the editor window calls it exactly the way gameplay code would.
+- `RoomRandomizerWindow` (`Tools > JadedBelles > Room Randomizer`) — fill templates into the scene, snapshot zones into templates, clear results, optional fixed seed for reproducible layouts.
+
+Author a template (visual workflow):
+
+```
+1. Create an empty GameObject 'BedroomOrigin' in a scratch scene.
+2. Under it, create child empties, add SlotZoneAuthoring to each:
+   - 'BedSlot'       BoxCollider sized to the corner where a bed can go.
+                     candidatePrefabs: [BedTwin (w=1), BedQueen (w=2), BedBunk (w=1)]
+                     countRange: (1,1)   rotationMode: RandomYaw90
+   - 'NightstandSlot' BoxCollider next to the bed.
+                     candidatePrefabs: [NightstandA, NightstandB]
+                     countRange: (1,2)   rotationMode: RandomYaw90
+   - 'DecorFloorSlot' BoxCollider covering the floor.
+                     candidatePrefabs: [Rug, Plant, Chest, Trunk]
+                     countRange: (3,6)   rotationMode: RandomYaw
+3. Open Tools > JadedBelles > Room Randomizer.
+4. Assign 'BedroomOrigin' as Origin, click 'Create New Template From Origin…'.
+   Save as BedroomTemplate.asset.
+```
+
+Randomize a variation:
+
+```
+1. Assign BedroomTemplate as Template.
+2. Set Origin to an empty in the actual level scene (defines position + rotation).
+3. Set Container to a child transform where spawned pieces should live.
+4. Set Overlap Layers to the layer(s) placed prefabs sit on.
+5. Hit 'Randomize'. Ctrl+Z reverts. Hit again for another variation.
+```
+
+Call it from gameplay code (procgen dungeons, roguelike floors):
+
+```csharp
+using JadedBelles.Util.RoomTemplates;
+using UnityEngine;
+
+[SerializeField] private RoomTemplate bedroom;
+[SerializeField] private Transform roomOrigin;
+[SerializeField] private Transform container;
+[SerializeField] private LayerMask placementLayers;
+
+void Start()
+{
+    RoomRandomizer.Randomize(new RoomRandomizerOptions
+    {
+        template = bedroom,
+        origin = roomOrigin,
+        container = container,
+        overlapLayers = placementLayers,
+        seed = 42, // omit for a fresh layout every call
+    });
+}
+```
+
 ## Roadmap
 
 Slated for extraction from the Match3 codebase as they mature and prove reusable:
