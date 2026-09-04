@@ -17,7 +17,7 @@ Samples~.meta
 .DS_Store
 Thumbs.db
 *.swp
-*~
+*.bak
 .vs/
 .vscode/
 .idea/
