@@ -126,15 +126,173 @@ Usage:
 
 See the doc comment on `InputReader` for a full subclass example.
 
+### `JadedBelles.Util.Singletons`
+
+MonoBehaviour base class that eats the copy-paste `Awake` singleton dance. Subclass with the CRTP form and override `OnSingletonAwake` for one-time setup — the base handles duplicate destruction and `DontDestroyOnLoad` (opt out via `PersistAcrossScenes`).
+
+- `SingletonBehaviour<T>` — provides `Instance`, `PersistAcrossScenes`, `OnSingletonAwake`, and clears `Instance` on destroy.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Singletons;
+using UnityEngine;
+
+public class AudioManager : SingletonBehaviour<AudioManager>
+{
+    [SerializeField] private AudioSource source;
+
+    protected override void OnSingletonAwake()
+    {
+        if (source == null) source = GetComponent<AudioSource>();
+    }
+
+    public void Play(AudioClip clip) => source.PlayOneShot(clip);
+}
+```
+
+### `JadedBelles.Util.Timers`
+
+Plain-C# tickable timers extracted from `StroTheGoatUtils`. Zero Unity dependency in the core — feed them a `deltaTime` each frame and hook the `OnTimerStart` / `OnTimerStop` events.
+
+- `Timer` — abstract base with `StartTimer / StopTimer / Pause / Resume / Reset / Tick`, plus `OnTimerStart`, `OnTimerStop`, `ForceTimerEnd` action hooks.
+- `CountdownTimer` — counts down from an initial duration, fires `OnTimerStop` at zero, exposes `IsFinished`.
+- `StopwatchTimer` — counts up from zero, exposes `GetTime()`.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Timers;
+using UnityEngine;
+
+public class RoundClock : MonoBehaviour
+{
+    private CountdownTimer _timer;
+
+    private void Start()
+    {
+        _timer = new CountdownTimer(60f);
+        _timer.OnTimerStop = () => Debug.Log("Round over");
+        _timer.StartTimer();
+    }
+
+    private void Update() => _timer.Tick(Time.deltaTime);
+}
+```
+
+### `JadedBelles.Util.Time`
+
+Unix-timestamp / countdown-string helpers. No `UnityEngine` dependency — pure `System.DateTimeOffset` / `TimeSpan` math.
+
+- `TimeUtils` — `UnixNow`, `MinutesBetween`, `FormatCountdown`, `DurationBetween`, `ParseUnixString`.
+- `TimeSnapshot` — struct holding a `DateTime` + Unix timestamp pair for logging or wire serialization.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Time;
+
+long start = TimeUtils.UnixNow;
+string label = TimeUtils.FormatCountdown(start, intervalDurationSeconds: 300);
+// label == "05:00" right at the start; "04:59" a second later, etc.
+```
+
+### `JadedBelles.Util.RandomUtil`
+
+Dice-rolling helpers on top of `UnityEngine.Random`. Namespaced as `RandomUtil` (not `Random`) so you never have to disambiguate against `UnityEngine.Random` at the call site.
+
+- `Dice` — `RollDice(sides)`, `RollMultipleDiceOfSameType`, `AddAllDiceOfSameType`, and the mixed-pool variants.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.RandomUtil;
+
+int damage = Dice.AddAllDiceOfSameType(numberOfDice: 3, sides: 6); // 3d6
+```
+
+### `JadedBelles.Util.Coroutines`
+
+Small helpers for the async/coroutine seams every Unity project rewrites eventually.
+
+- `CoroutineUtils.AwaitTask(Task)` — yield-until-completed bridge for `System.Threading.Tasks.Task`; logs faults via `Debug.LogException`.
+- `WaitExtensions.DelayerWithContinuance(delay, continue, callback)` — wait, invoke callback, wait some more.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Coroutines;
+using System.Threading.Tasks;
+using UnityEngine;
+
+public class SaveWatcher : MonoBehaviour
+{
+    public void Save(Task apiCall) => StartCoroutine(CoroutineUtils.AwaitTask(apiCall));
+}
+```
+
+### `JadedBelles.Util.Juice`
+
+Game-feel helpers that made it out of Match3's `Juice/` folder unchanged.
+
+- `ScreenShaker` — Perlin-noise `transform.localPosition` shake. Overlapping calls merge to the max amplitude and max remaining duration, so aftershocks never dampen the main hit. Runs on unscaled time so it survives hitstop.
+- `HitstopController` — plain object (not a MonoBehaviour) that pauses `Time.timeScale` for N ms and restores it. Overlapping requests extend the freeze if longer, ignore it if shorter. Construct with a host MonoBehaviour that will run the coroutine.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.Juice;
+using UnityEngine;
+
+public class HitFX : MonoBehaviour
+{
+    [SerializeField] private ScreenShaker shaker;
+    private HitstopController _hitstop;
+
+    private void Awake() => _hitstop = new HitstopController(this);
+
+    public void OnBigHit()
+    {
+        shaker.Shake(amp: 0.4f, dur: 0.25f);
+        _hitstop.Begin(ms: 80);
+    }
+}
+```
+
+### `JadedBelles.Util.UI`
+
+Drop-in UI components with zero game coupling.
+
+- `BreathingImage` — pulses `transform.localScale`, optional alpha, and optional Z-rotation on a smoothstep breath curve, on unscaled time so it keeps breathing when the game is paused. Great for loading screens and idle NPCs.
+- `LoadingBar` — constant-speed, non-outrunning progress bar backed by a filled `Image` and an optional `TMP_Text` percentage label. Cannot pass the last reported progress value; guarantees the final sprint is visible.
+
+Minimal example:
+
+```csharp
+using JadedBelles.Util.UI;
+using UnityEngine;
+
+public class LoadingController : MonoBehaviour
+{
+    [SerializeField] private LoadingBar bar;
+
+    private void Update()
+    {
+        // Feed progress from your loader; the bar animates smoothly, never jumps.
+        bar.ReportProgress(MyLoader.NormalizedProgress);
+        if (MyLoader.Done) bar.ReportComplete();
+    }
+}
+```
+
 ## Roadmap
 
 Slated for extraction from the Match3 codebase as they mature and prove reusable:
 
-- `AudioManager` — namespaced audio clip lookup
-- `MatchJuice` / `ScreenShaker` — screen shake, hitstop, pitched pops (Juice module)
 - `HUDCounter` — animated numeric counter UI component
 - `CloudSaveManager` glue — thin wrapper around JadedBelles API save endpoints
 - Object pooling helpers
+- Grid-neighborhood offsets (`NeighborOffsets`, `ForEachNeighborInBounds`) — after Match3's PowerUp code stabilizes
 
 ## Contributing
 
