@@ -1,6 +1,6 @@
 {
   "name": "com.jadedbelles.util",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "displayName": "JadedBelles Util",
   "description": "Reusable Unity utilities for JadedBelles games. Currently ships a generic 2D grid system; more modules will land here as they get extracted from Xandria Gem Jam and other JadedBelles titles.",
   "unity": "2022.3",
@@ -20,6 +20,11 @@
       "displayName": "Grid System Basics",
       "description": "A minimal example that creates a GridSystem2D, sets values, and prints them.",
       "path": "Samples~/GridSystemBasics"
+    },
+    {
+      "displayName": "Character Customization",
+      "description": "Prefab + wiring reference for the CharacterCustomization module. Drop into a scene, add a CharacterCustomization rig, and go.",
+      "path": "Samples~/CharacterCustomization"
     }
   ]
 }

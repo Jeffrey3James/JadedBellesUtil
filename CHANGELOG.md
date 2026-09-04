@@ -2,6 +2,22 @@
 
 All notable changes to `com.jadedbelles.util` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-09-04
+
+### Added
+- `JadedBelles.Util.CharacterCustomization` module (extracted from Anni-Gem-Speed-Trials' `CharacterCustomization/` folder):
+  - `BodyPart` — serializable per-slot descriptor. Replaces the source's game-specific `BodyPartType` enum (Glasses/Hair/Hands/etc.) with a free-form `slotId` string so any game can define its own slots without recompiling.
+  - `BodyPartButton` — inspector wiring for a UGUI button + slot id + direction.
+  - `CharacterCreationEvents` — event bus (`InitializeCharacterOutfits`, `onChangeBodyPartForward`) shared between the rig and the UI.
+  - `CharacterOutfitManager` — cross-scene singleton owning the current outfit as a `Dictionary<string, int>` keyed by slot id. Inherits from the packaged `SingletonBehaviour<T>`.
+  - `CharacterCustomization` — MonoBehaviour that drives a character rig; syncs visible parts to the manager's saved outfit on `Start`, exposes `GetNextBodyPart` / `GetLastBodyPart` / `PersistCurrentSelectionAsync`.
+  - `CharacterUIController` — UGUI controller wiring next/previous/save buttons. Return scene defaults to `"MainMenu"` but is now a serialized inspector field per game; leave empty to skip the scene load.
+  - `ICharacterSaveProvider` — bridge interface (`Task<Dictionary<string, int>> LoadOutfitAsync()` / `Task SaveOutfitAsync(...)`). Replaces the source's hardcoded `StroCloudSave.instance` calls so consumers can plug in any save system (cloud, PlayerPrefs, JadedBelles API, JSON).
+- New `Character Customization` sample under `Samples~/CharacterCustomization/` — ships the original `CharacterOutfitManager.prefab` as a wiring reference.
+
+### Changed
+- Source ↔ package divergence: three intentional coupling breaks vs. Anni-Gem's version. Slot identifiers are strings instead of a hardcoded enum; save I/O is behind `ICharacterSaveProvider` instead of a hardcoded singleton; the return scene is a serialized field instead of the hardcoded string `"MainMenu"`. Migration for existing Anni-Gem code: swap the `BodyPartType` enum reference for the string form (e.g. `BodyPartType.Hat` → `"Hat"`), implement `ICharacterSaveProvider` as a thin wrapper around `StroCloudSave`, and set `returnSceneName = "MainMenu"` on the UI controller in the inspector.
+
 ## [0.5.0] - 2026-09-04
 
 ### Added

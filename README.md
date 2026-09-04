@@ -451,6 +451,52 @@ public sealed class ExampleWindow : EditorWindow
 }
 ```
 
+### `JadedBelles.Util.CharacterCustomization`
+
+Data-driven character outfit customization: cycle hats, hair, shoes, wings, or any slot the game defines. Slots are identified by strings, not a hardcoded enum, so a fashion game and a robot builder can share this module without recompiling it. Save I/O is behind an interface so the module doesn't care whether outfits live in cloud save, PlayerPrefs, or a backend API.
+
+- `BodyPart` — one entry per slot: a string `slotId` plus the swappable GameObjects.
+- `CharacterCustomization` — MonoBehaviour on the character root that syncs visible parts to the saved outfit and exposes `GetNextBodyPart` / `GetLastBodyPart` / `PersistCurrentSelectionAsync`.
+- `CharacterOutfitManager` — cross-scene singleton (built on `SingletonBehaviour<T>`) that owns the outfit dictionary and the event bus.
+- `CharacterUIController` — UGUI plumbing: wires next/previous/save buttons to the rig; return scene is a serialized field.
+- `ICharacterSaveProvider` — implement once per game to plug outfit persistence into any save backend.
+- `Character Customization` sample under `Samples~/CharacterCustomization/` — the original `CharacterOutfitManager.prefab` as a wiring reference.
+
+Minimal setup:
+
+```csharp
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using JadedBelles.Util.CharacterCustomization;
+using UnityEngine;
+
+// 1. Wire the manager once at boot, plug in your save system:
+public sealed class MySaveProvider : ICharacterSaveProvider
+{
+    public Task<Dictionary<string, int>> LoadOutfitAsync() => Task.FromResult(new Dictionary<string, int>());
+    public Task SaveOutfitAsync(Dictionary<string, int> outfit) => Task.CompletedTask;
+}
+
+public sealed class Boot : MonoBehaviour
+{
+    private void Start()
+    {
+        CharacterOutfitManager.Instance.SaveProvider = new MySaveProvider();
+    }
+}
+
+// 2. Put CharacterCustomization on the character root and fill BodyPart[] in the inspector:
+//    slotId="Hat",   bodyParts=[Hat01, Hat02, Hat03]
+//    slotId="Hair",  bodyParts=[Hair01, Hair02]
+//    slotId="Shoes", bodyParts=[Shoes01, Shoes02, Shoes03]
+
+// 3. On the UI screen, add CharacterUIController and wire the BodyPartButton[] entries:
+//    button=NextHatButton,  slotId="Hat",  next=true
+//    button=PrevHatButton,  slotId="Hat",  next=false
+//    button=NextHairButton, slotId="Hair", next=true ...
+// Set returnSceneName in the inspector to whatever scene the Save button should load.
+```
+
 ## Roadmap
 
 Slated for extraction from the Match3 codebase as they mature and prove reusable:
