@@ -2,6 +2,30 @@
 
 All notable changes to `com.jadedbelles.util` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-09-04
+
+### Added
+- `JadedBelles.Util.AISenses` — full five-sense stimulus/perception system for AI agents (guards, animals, enemies). Extracted from SyntyGameJam's `AI/PatrolSystem/` (Vision + Hearing) and `_Scripts/DistractionSystem/` (HoldableItem + ThrowableItem + DistractionData), then generalized and expanded to cover the remaining three senses (touch, smell, taste). Every sensor implements `IAISense` (marker + `SenseEnabled` toggle) so a stun/dazed status can flip perception off with one `foreach`.
+  - **Core** — `StimulusSystem<TEvent>` generic pubsub bus (one static bus per stimulus type; games can add custom stimuli without modifying the package), `Stimuli` convenience non-generic wrapper for the four broadcast stimuli, `SensePerception<TEvent>` payload (raw event + perceived intensity), `SensePerceptionEvent<T>` UnityEvent alias for inspector wiring.
+  - **Sight** (`SightSensor`) — polling view cone (distance + angle + LOS raycast). Fires `OnSpotted(Transform)` / `OnLost(Transform)` on visibility transitions. Extracted from SyntyGameJam's `VisionSettings`; removed the hardcoded `GameEventsManager.instance.gameEvents.GameStop()` side effect and the always-on `Debug.Log("Player Seen")`, renamed `CanSeePlayer` to `CanSeeTarget` (the sensor doesn't own the concept of "player").
+  - **Hearing** (`HearingSensor`) — subscribes to `StimulusSystem<SoundEvent>`, applies linear falloff, invokes `OnHeard(perception)` above threshold. Extracted from SyntyGameJam's `HearingSensor`; removed the always-on debug logs, added an `ignoreSource` field so a character doesn't hear its own footsteps, promoted the event to a `SensePerceptionEvent<SoundEvent>` for inspector wiring.
+  - **Touch** (`TouchSensor`, NEW) — physics-contact sensor. Fires on `OnCollisionEnter` (intensity = clamp01(relativeVelocity / saturationVelocity)) and `OnTriggerEnter` (intensity = 1). Filters by `ignoreLayers`; can optionally re-broadcast every touch to `StimulusSystem<TouchEvent>` for global listeners. Use cases: guard notices being bumped from behind, pet notices being petted, landmine notices being stepped on.
+  - **Smell** (`ScentEmitter` + `SmellSensor`, NEW) — unlike sound, scents linger. `ScentEmitter` pulses `ScentEvent`s at a configurable interval and decays linearly from `initialStrength` to 0 over `lifetime`, then destroys or disables itself. `SmellSensor` applies distance falloff plus an optional wind bias (dot-product between wind direction and source-to-sensor vector, weighted by `windAdvantage`) so downwind scents register stronger than upwind. Optional `scentTagFilter` list means the dog reacts to `"blood"` but not `"perfume"`.
+  - **Taste** (`TasteSensor` + `BaitItem`, NEW) — hybrid delivery: `TasteSensor.Feed(TasteEvent)` for direct ingestion (bait feeds one animal), plus subscription to `StimulusSystem<TasteEvent>` for area-of-effect flavors (contaminated water in a lake). `BaitItem` is a trigger-collider helper that force-feeds any `TasteSensor` that enters and then consumes itself.
+  - **Distraction helpers** — `DistractionData` authoring class (label + `DistractionSense` mask + sound params + scent params) with two convenience methods: `EmitFrom(position)` (single-shot broadcast on every sense in the mask) and `SpawnScentEmitter(position)` (spawn a lingering `ScentEmitter` when the scent lifetime matters). `HoldableDistraction` and `ThrowableDistraction` are the generalized SyntyGameJam pickup items, decoupled from the game-specific `IHoldable`/`IThrowable` interfaces so any interaction system can drive them. `ThrowableDistraction` now uses a proper `LayerMask` for impact detection (was a single int), has a `oneShot` mode to prevent bounces from re-triggering, and a small `impactArmDelay` to prevent self-hit at release.
+
+### Divergence from SyntyGameJam source
+- **Vision:** hardcoded `GameEventsManager.instance.gameEvents.GameStop()` removed; consumers react to `OnSpotted` themselves. Debug logs removed. `CanSeePlayer` renamed to `CanSeeTarget`.
+- **Hearing:** debug logs removed. Added `ignoreSource` for own-footstep suppression. `onSoundHeard` (2-arg `UnityAction`) replaced with `OnHeard` (UnityEvent<SensePerception<SoundEvent>>).
+- **SoundEmmitter (typo):** not extracted verbatim — the animation-driven footstep emitter is game-specific. The reusable core (position + radius + loudness) lives in `SoundEvent` and `Stimuli.EmitSound`; games call it from their own animation events or movement scripts.
+- **HoldableItem/ThrowableItem:** decoupled from `IHoldable`/`IThrowable`/`IInteractable` (game-specific). `ThrowableItem`'s single-int `obstacleLayer` promoted to a real `LayerMask`. Sound-only distraction generalized to multi-sense via `DistractionSense` flags.
+- **DistractionData:** the `AudioClip` field is gone — audio playback belongs in a separate component. `DistractionData` is now data for the AI senses only.
+
+### Notes
+- 3D-only in this cut (physics APIs used are `Physics.Raycast` for sight and `OnCollisionEnter` for touch). A 2D variant is a future addition when a 2D consumer needs it.
+- The 5 senses share zero code beyond `IAISense` and the generic `StimulusSystem<T>` bus. Games can wire in their own senses (heat vision, echolocation, mana sense) by declaring a new event struct and calling `StimulusSystem<MyEvent>.Emit(...)` — no package changes needed.
+- Runtime asmdef unchanged: no new package references, no new versionDefines. Everything compiles into the existing `JadedBelles.Util.Runtime` assembly.
+
 ## [0.8.0] - 2026-09-04
 
 ### Added

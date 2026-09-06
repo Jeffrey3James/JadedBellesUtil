@@ -563,6 +563,81 @@ void Start()
 }
 ```
 
+### `JadedBelles.Util.AISenses`
+
+Five-sense stimulus/perception system for AI agents (guards, animals, enemies). Emitters publish stimuli into typed pubsub buses; sensors on each character subscribe and decide what they perceive.
+
+Senses:
+
+- **Sight** — `SightSensor` (polling view cone: distance + angle + line-of-sight raycast). `OnSpotted(Transform)` / `OnLost(Transform)`.
+- **Hearing** — `HearingSensor` subscribes to `StimulusSystem<SoundEvent>`; linear distance falloff, threshold gate, optional own-source suppression.
+- **Touch** — `TouchSensor` (physics contact). `OnCollisionEnter` scales intensity by relative velocity; `OnTriggerEnter` fires at intensity 1. Layer-mask filter.
+- **Smell** — `ScentEmitter` pulses lingering scent that decays over its lifetime; `SmellSensor` applies distance falloff plus optional wind bias so downwind scents register stronger than upwind, with a per-sensor tag whitelist.
+- **Taste** — `TasteSensor.Feed(TasteEvent)` for direct ingestion (bait feeds one animal), plus `StimulusSystem<TasteEvent>` for area-of-effect flavors (contaminated water). `BaitItem` is a ready-made trigger-collider helper that force-feeds any `TasteSensor` that enters and self-destructs.
+
+Distraction items (extracted + generalized from SyntyGameJam):
+
+- `DistractionData` — authoring data with a `DistractionSense` flags mask so one distraction can ping sound + scent (etc.) at once. `EmitFrom(position)` for single-shot broadcast, `SpawnScentEmitter(position)` when scent should linger and decay.
+- `HoldableDistraction` — pick-up-and-drop item that emits its `DistractionData` on drop. Decoupled from any specific interaction system.
+- `ThrowableDistraction` — same, plus emits on throw AND on landing (proper `LayerMask` for impact surfaces; `oneShot` prevents bounce re-triggers).
+
+Minimal setup — guard hears a thrown bottle:
+
+```csharp
+using JadedBelles.Util.AISenses;
+using UnityEngine;
+
+// Guard prefab: add HearingSensor. Wire OnHeard in the inspector to your alert method:
+public sealed class Guard : MonoBehaviour
+{
+    public void OnHeardSound(SensePerception<SoundEvent> perception)
+    {
+        // Move toward perception.Event.Position; intensity available at perception.Intensity
+    }
+}
+
+// Bottle prefab: add ThrowableDistraction, configure DistractionData in the inspector
+// (senses = Sound, loudness = 0.8, soundRadius = 15). Wire your pickup system to call
+// bottle.Pickup(hand) / bottle.Throw(direction, force).
+```
+
+Dog tracks a blood trail:
+
+```csharp
+using JadedBelles.Util.AISenses;
+
+// When the wound spawns:
+var bloodTrail = new GameObject("BloodTrail");
+bloodTrail.transform.position = woundPosition;
+var scent = bloodTrail.AddComponent<ScentEmitter>();
+scent.scentTag = "blood";
+scent.radius = 10f;
+scent.initialStrength = 1f;
+scent.lifetime = 60f;
+
+// Dog prefab: add SmellSensor, set scentTagFilter = ["blood"], set windDirection,
+// wire OnSmelled(perception) to navigate toward perception.Event.Position.
+```
+
+Animal takes bait:
+
+```csharp
+using JadedBelles.Util.AISenses;
+
+// Animal prefab: add TasteSensor, set flavorTagFilter = ["bait", "poison"].
+// Wire OnTasted to a hunger reset (or death from poison).
+
+// Bait prefab: add BaitItem, set flavorTag = "bait", place in world.
+// Trigger collider on the animal's mouth calls TasteSensor.Feed automatically.
+```
+
+Stun all senses on a character with one call:
+
+```csharp
+foreach (var sense in enemy.GetComponentsInChildren<IAISense>())
+    sense.SenseEnabled = false;
+```
+
 ## Roadmap
 
 Slated for extraction from the Match3 codebase as they mature and prove reusable:

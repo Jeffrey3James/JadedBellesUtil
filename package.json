@@ -1,6 +1,6 @@
 {
   "name": "com.jadedbelles.util",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "displayName": "JadedBelles Util",
   "description": "Reusable Unity utilities for JadedBelles games. Currently ships a generic 2D grid system; more modules will land here as they get extracted from Xandria Gem Jam and other JadedBelles titles.",
   "unity": "2022.3",
