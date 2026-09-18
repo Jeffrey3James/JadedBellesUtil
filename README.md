@@ -7,6 +7,7 @@ Reusable Unity utilities extracted from Xandria Gem Jam and other JadedBelles ti
 - Unity 2022.3 or newer
 - TextMeshPro (built-in on modern Unity)
 - Unity Input System (`com.unity.inputsystem`) — required by the `Input` module. Add it via `Window → Package Manager → Unity Registry → Input System` if your project doesn't already have it.
+- Newtonsoft JSON (`com.unity.nuget.newtonsoft-json` 3.2.1), resolved automatically through this package's dependency manifest for the save-system module.
 
 ## Install
 
@@ -27,6 +28,17 @@ Since this repo is private, Unity will need git credentials with read access —
 Alternatively: `Window → Package Manager → + → Add package from git URL...` and paste the same URL.
 
 ## Modules
+
+### `JadedBelles.Util.SaveSystem`
+
+Generic, versioned local saves for native Unity players. This is an opt-in module in its own assembly; it does not replace a game's existing save flow or configure a cloud backend.
+
+- `SaveManager<T>`: worker-side Newtonsoft serialization, async file writes, one-instance save queue, validated previous-generation backup, and conservative recovery.
+- `SaveDefinition<T>`: a game's schema ID, version, default-data factory, validation callback, and sequential JSON migrations.
+- `UnitySaveSystem.Create<T>(product, profile, slot, definition)`: main-thread factory resolving `Application.persistentDataPath/Saves/product/profile/slot.json`.
+- `SaveLoadResult<T>`: explicit new-game, loaded, recovered-backup, or failed status, with diagnostics. Failed loads never enable overwriting the existing data.
+
+Import **Save System Basics** from Package Manager for `PlayerState` / `WorldData` models and a save-button component. Follow [the save-system integration guide](Documentation~/SaveSystem.md) for setup, threading ownership, profile isolation, versioning, tests, and platform limitations.
 
 ### `JadedBelles.Util.GridSystem`
 

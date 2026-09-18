@@ -2,7 +2,7 @@
   "name": "com.jadedbelles.util",
   "version": "0.9.0",
   "displayName": "JadedBelles Util",
-  "description": "Reusable Unity utilities for JadedBelles games. Currently ships a generic 2D grid system; more modules will land here as they get extracted from Xandria Gem Jam and other JadedBelles titles.",
+  "description": "Reusable Unity utilities for JadedBelles games, including grids, events, state machines, character customization, AI senses, and versioned local save systems.",
   "unity": "2022.3",
   "author": {
     "name": "Jeffrey James III",
@@ -15,6 +15,9 @@
     "jadedbelles"
   ],
   "license": "UNLICENSED",
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  },
   "samples": [
     {
       "displayName": "Grid System Basics",
@@ -25,6 +28,11 @@
       "displayName": "Character Customization",
       "description": "Prefab + wiring reference for the CharacterCustomization module. Drop into a scene, add a CharacterCustomization rig, and go.",
       "path": "Samples~/CharacterCustomization"
+    },
+    {
+      "displayName": "Save System Basics",
+      "description": "Generic versioned saves with detached DTOs, ID-based world graphs, async writes, migrations, and conservative backup recovery.",
+      "path": "Samples~/SaveSystemBasics"
     }
   ]
 }

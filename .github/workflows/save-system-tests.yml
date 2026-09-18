@@ -1,0 +1,20 @@
+name: Save system core tests
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  save-system:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Compile portable core and run persistence tests
+        run: dotnet test Tests~/SaveSystem.Tests.csproj --configuration Release --logger "console;verbosity=normal"

@@ -2,6 +2,20 @@
 
 All notable changes to `com.jadedbelles.util` are documented here. This project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- `JadedBelles.Util.SaveSystem`, a separate assembly for generic `SaveManager<T>`, immutable game-owned `SaveDefinition<T>`, and the main-thread `UnitySaveSystem` factory.
+- Native-platform, worker-side Newtonsoft serialization and asynchronous writes with validated backup publication, corrupt-file preservation, serialized operations, sequential migrations, schema identity checks, and write protection after failed loads.
+- Product/profile/slot partitioning; no game-specific runtime models, automatic scene objects, destructive reset, or competing cloud backend.
+- Importable Save System Basics sample with opt-in DTOs, ID-based world graphs, a deep-copy snapshot, and explicit save-button wiring.
+- Unity EditMode persistence tests and a standalone .NET harness that builds the core against .NET Standard 2.1, plus Linux/Windows GitHub Actions verification.
+- Integration and verification documentation. Native device, IL2CPP, and Unity Editor validation remain required before release.
+
+### Changed
+- Declare `com.unity.nuget.newtonsoft-json` 3.2.1 as a package dependency. Existing modules and their runtime assembly are otherwise unchanged.
+- Keep the package version at 0.9.0 until an explicitly approved release; no tag or game dependency is updated by this integration.
+
 ## [0.9.0] - 2026-09-04
 
 ### Added

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AssemblyName>JadedBelles.Util.SaveSystem</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Runtime/SaveSystem/*.cs" Exclude="../Runtime/SaveSystem/UnitySaveSystem.cs" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
+</Project>
