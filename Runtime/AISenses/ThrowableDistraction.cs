@@ -49,7 +49,7 @@ namespace JadedBelles.Util.AISenses
             }
             if (col != null) col.enabled = true;
 
-            impactArmedAt = Time.time + impactArmDelay;
+            impactArmedAt = UnityEngine.Time.time + impactArmDelay;
             hasImpactedThisThrow = false;
 
             Data.EmitFrom(transform.position, transform);
@@ -57,7 +57,7 @@ namespace JadedBelles.Util.AISenses
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (Time.time < impactArmedAt) return;
+            if (UnityEngine.Time.time < impactArmedAt) return;
             if (oneShot && hasImpactedThisThrow) return;
             if ((impactLayers.value & (1 << collision.gameObject.layer)) == 0) return;
 

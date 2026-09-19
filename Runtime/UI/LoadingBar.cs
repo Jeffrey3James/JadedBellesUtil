@@ -87,7 +87,7 @@ namespace JadedBelles.Util.UI
             if (fillImage == null) return;
 
             // Unscaled so the bar keeps moving with timeScale at 0.
-            float maxStep = fillSpeed * Time.unscaledDeltaTime;
+            float maxStep = fillSpeed * UnityEngine.Time.unscaledDeltaTime;
 
             float ceiling = _targetProgress;
 

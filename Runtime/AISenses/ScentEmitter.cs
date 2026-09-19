@@ -42,7 +42,7 @@ namespace JadedBelles.Util.AISenses
 
         private void Update()
         {
-            elapsed += Time.deltaTime;
+            elapsed += UnityEngine.Time.deltaTime;
             if (elapsed >= lifetime)
             {
                 if (destroyOnExpire) Destroy(gameObject);
@@ -50,8 +50,8 @@ namespace JadedBelles.Util.AISenses
                 return;
             }
 
-            if (Time.time < nextPulseAt) return;
-            nextPulseAt = Time.time + pulseInterval;
+            if (UnityEngine.Time.time < nextPulseAt) return;
+            nextPulseAt = UnityEngine.Time.time + pulseInterval;
 
             float t = elapsed / lifetime;
             float currentStrength = initialStrength * (1f - t);
