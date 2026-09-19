@@ -58,7 +58,7 @@ namespace JadedBelles.Util.AISenses
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.cyan;
+            Gizmos.color = UnityEngine.Color.cyan;
             Gizmos.DrawWireSphere(transform.position, gizmoRadius);
         }
     }

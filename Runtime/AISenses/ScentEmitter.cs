@@ -63,7 +63,7 @@ namespace JadedBelles.Util.AISenses
         {
             float t = Application.isPlaying && lifetime > 0f ? Mathf.Clamp01(elapsed / lifetime) : 0f;
             float alpha = 0.5f * (1f - t);
-            Gizmos.color = new Color(0.7f, 0.3f, 0.9f, alpha);
+            Gizmos.color = new UnityEngine.Color(0.7f, 0.3f, 0.9f, alpha);
             Gizmos.DrawWireSphere(transform.position, radius);
         }
     }

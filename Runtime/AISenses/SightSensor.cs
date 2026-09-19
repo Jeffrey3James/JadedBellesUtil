@@ -84,21 +84,21 @@ namespace JadedBelles.Util.AISenses
 
         private void OnDrawGizmosSelected()
         {
-            Gizmos.color = Color.yellow;
+            Gizmos.color = UnityEngine.Color.yellow;
             Gizmos.DrawWireSphere(EyePosition, viewDistance);
 
             Vector3 left = Quaternion.Euler(0f, -viewAngle * 0.5f, 0f) * transform.forward;
             Vector3 right = Quaternion.Euler(0f, viewAngle * 0.5f, 0f) * transform.forward;
-            Gizmos.color = Color.cyan;
+            Gizmos.color = UnityEngine.Color.cyan;
             Gizmos.DrawLine(EyePosition, EyePosition + left * viewDistance);
             Gizmos.DrawLine(EyePosition, EyePosition + right * viewDistance);
 
-            Gizmos.color = Color.blue;
+            Gizmos.color = UnityEngine.Color.blue;
             Gizmos.DrawSphere(EyePosition, 0.08f);
 
             if (target != null)
             {
-                Gizmos.color = HasLineOfSight() ? Color.green : Color.red;
+                Gizmos.color = HasLineOfSight() ? UnityEngine.Color.green : UnityEngine.Color.red;
                 Gizmos.DrawLine(EyePosition, TargetPosition);
                 Gizmos.DrawSphere(TargetPosition, 0.08f);
             }

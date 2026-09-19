@@ -39,7 +39,7 @@ namespace JadedBelles.Util.RoomTemplates
         public float overlapPadding = 0f;
 
         [Tooltip("Gizmo color for the zone box in the Scene View.")]
-        public Color gizmoColor = new Color(0f, 1f, 0.5f, 0.35f);
+        public UnityEngine.Color gizmoColor = new UnityEngine.Color(0f, 1f, 0.5f, 0.35f);
 
         private void OnDrawGizmos()
         {
@@ -50,7 +50,7 @@ namespace JadedBelles.Util.RoomTemplates
             Gizmos.matrix = transform.localToWorldMatrix;
             Gizmos.DrawCube(col.center, col.size);
 
-            Gizmos.color = new Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, 1f);
+            Gizmos.color = new UnityEngine.Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, 1f);
             Gizmos.DrawWireCube(col.center, col.size);
         }
     }

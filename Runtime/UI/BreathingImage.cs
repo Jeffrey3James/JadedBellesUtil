@@ -129,7 +129,7 @@ namespace JadedBelles.Util.UI
 
             if (pulseAlpha && targetImage != null)
             {
-                Color c = targetImage.color;
+                UnityEngine.Color c = targetImage.color;
                 c.a = Mathf.Lerp(minAlpha, maxAlpha, breath);
                 targetImage.color = c;
             }
@@ -142,7 +142,7 @@ namespace JadedBelles.Util.UI
             transform.localRotation = _baseRotation;
             if (targetImage != null)
             {
-                Color c = targetImage.color;
+                UnityEngine.Color c = targetImage.color;
                 c.a = maxAlpha;
                 targetImage.color = c;
             }
