@@ -11,7 +11,7 @@ namespace JadedBelles.Util.UI
     /// SETUP: drop this on the GameObject holding your loading-screen Image. That's it.
     /// Everything else is optional tuning in the Inspector.
     ///
-    /// Runs on unscaled time so it keeps breathing even when <c>Time.timeScale</c> is 0
+    /// Runs on unscaled time so it keeps breathing even when <c>UnityEngine.Time.timeScale</c> is 0
     /// (which is common while a loading screen is up).
     /// </summary>
     [DisallowMultipleComponent]
@@ -87,7 +87,7 @@ namespace JadedBelles.Util.UI
         private void Update()
         {
             // Unscaled: loading screens usually run with timeScale pinned at 0.
-            _phase += Time.unscaledDeltaTime / breathDuration;
+            _phase += UnityEngine.Time.unscaledDeltaTime / breathDuration;
             if (_phase >= 1f) _phase -= 1f;
 
             ApplyBreath(BreathCurve(_phase));

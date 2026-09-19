@@ -62,7 +62,7 @@ namespace JadedBelles.Util.Juice
                 return;
             }
 
-            _remaining -= Time.unscaledDeltaTime; // survive hitstop (Time.timeScale = 0)
+            _remaining -= UnityEngine.Time.unscaledDeltaTime; // survive hitstop (UnityEngine.Time.timeScale = 0)
 
             // Linear decay: full amp at start of the window, zero at end.
             float t = _duration > 0f ? Mathf.Clamp01(_remaining / _duration) : 0f;
@@ -70,7 +70,7 @@ namespace JadedBelles.Util.Juice
 
             // Perlin gives smooth 1-D noise per axis; offsetting the sample per axis decorrelates
             // X and Y so the shake feels 2D, not a diagonal shimmy.
-            float time = Time.unscaledTime * 25f + _seed;
+            float time = UnityEngine.Time.unscaledTime * 25f + _seed;
             float ox = (Mathf.PerlinNoise(time, 0f) - 0.5f) * 2f;
             float oy = (Mathf.PerlinNoise(0f, time) - 0.5f) * 2f;
 
