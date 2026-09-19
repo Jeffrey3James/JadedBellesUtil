@@ -24,7 +24,7 @@ namespace JadedBelles.Util.EditorTools
         /// a temporary clone of <paramref name="guiStyle"/> with its normal text color
         /// overridden. Cloning avoids mutating the caller's shared style asset.
         /// </summary>
-        public static void CreateLabelAndConfigure(string labelName, GUIStyle guiStyle, Color color)
+        public static void CreateLabelAndConfigure(string labelName, GUIStyle guiStyle, UnityEngine.Color color)
         {
             GUIStyle tempStyle = new GUIStyle(guiStyle);
             tempStyle.normal.textColor = color;

@@ -113,17 +113,17 @@ namespace JadedBelles.Util.GridSystem
                 for (int y = 0; y < height; y++)
                 {
                     CreateWorldText(parent, x + "," + y, GetWorldPositionCenter(x, y), coordinateConverter.Forward);
-                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), Color.white, duration);
-                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), Color.white, duration);
+                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x, y + 1), UnityEngine.Color.white, duration);
+                    Debug.DrawLine(GetWorldPosition(x, y), GetWorldPosition(x + 1, y), UnityEngine.Color.white, duration);
                 }
             }
 
-            Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), Color.white, duration);
-            Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), Color.white, duration);
+            Debug.DrawLine(GetWorldPosition(0, height), GetWorldPosition(width, height), UnityEngine.Color.white, duration);
+            Debug.DrawLine(GetWorldPosition(width, 0), GetWorldPosition(width, height), UnityEngine.Color.white, duration);
         }
 
         private TextMeshPro CreateWorldText(GameObject parent, string text, Vector3 position, Vector3 dir,
-            int fontSize = 2, Color color = default, TextAlignmentOptions textAnchor = TextAlignmentOptions.Center, int sortingOrder = 0)
+            int fontSize = 2, UnityEngine.Color color = default, TextAlignmentOptions textAnchor = TextAlignmentOptions.Center, int sortingOrder = 0)
         {
             var go = new GameObject("DebugText_" + text, typeof(TextMeshPro));
             go.transform.SetParent(parent.transform);
@@ -133,7 +133,7 @@ namespace JadedBelles.Util.GridSystem
             var tmp = go.GetComponent<TextMeshPro>();
             tmp.text = text;
             tmp.fontSize = fontSize;
-            tmp.color = color == default ? Color.white : color;
+            tmp.color = color == default ? UnityEngine.Color.white : color;
             tmp.alignment = textAnchor;
             tmp.GetComponent<MeshRenderer>().sortingOrder = sortingOrder;
 
