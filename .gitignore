@@ -24,3 +24,8 @@ Thumbs.db
 
 # Package outputs
 *.tgz
+
+# Standalone .NET persistence verification (not imported by Unity)
+Tests~/bin/
+Tests~/obj/
+Tests~/TestResults/

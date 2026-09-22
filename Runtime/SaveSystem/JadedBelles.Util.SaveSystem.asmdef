@@ -1,0 +1,14 @@
+{
+  "name": "JadedBelles.Util.SaveSystem",
+  "rootNamespace": "JadedBelles.Util.SaveSystem",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": ["Newtonsoft.Json.dll"],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

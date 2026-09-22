@@ -1,0 +1,9 @@
+{
+  "name": "JadedBelles.Util.SaveSystem.Sample",
+  "rootNamespace": "JadedBelles.Util.Samples.SaveSystemBasics",
+  "references": ["JadedBelles.Util.SaveSystem"],
+  "overrideReferences": true,
+  "precompiledReferences": ["Newtonsoft.Json.dll"],
+  "autoReferenced": true,
+  "noEngineReferences": false
+}

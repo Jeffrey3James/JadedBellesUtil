@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsTestProject>true</IsTestProject>
+    <AssemblyName>JadedBelles.Util.SaveSystem.Tests</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Tests/Editor/SaveSystem/SaveManagerTests.cs" />
+    <Compile Include="../Samples~/SaveSystemBasics/SampleSaveData.cs" Link="SampleSaveData.cs" />
+    <Compile Include="SampleModelTests.cs" />
+    <ProjectReference Include="SaveSystem.Core.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+</Project>
